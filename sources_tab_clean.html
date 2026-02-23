@@ -1,0 +1,2757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sources Tab Mockup — Model Behavior</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root {
+  --bg: #f5eef6;
+  --panel: #fffbfd;
+  --border: #c9b8d4;
+  --border-inner: #e8dded;
+  --text: #3d2e4a;
+  --muted: #7a6889;
+  --dim: #a899b5;
+  --neg: #c2185b;
+  --neg-soft: #fce4ec;
+  --pos: #2e7d32;
+  --pos-soft: #e8f5e9;
+  --brand-accent: #7b4f9e;
+  --brand-soft: rgba(123,79,158,.06);
+  --brand-border: rgba(123,79,158,.25);
+  --claude: #d4872e;
+  --chatgpt: #3a8a5c;
+  --gemini: #7b4f9e;
+  --topbar: #3d2e4a;
+  --accent: #7b4f9e;
+  --warn: #e65100;
+  --warn-soft: #fff3e0;
+  --note-color: #e65100;
+  --note-bg: #fff3e0;
+  --amber: #e65100;
+  --amber-soft: #fff3e0;
+}
+
+html { font-size: 12px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ═══ TOP BAR ═══ */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--topbar);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 24px;
+}
+.topbar-brand {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.topbar-tabs { display: flex; gap: 0; }
+.tab {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.45);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 16px 18px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.tab:hover { color: rgba(255,255,255,.75); }
+.tab.active { color: #fff; border-bottom-color: var(--accent); }
+
+/* ═══ LAYOUT ═══ */
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 48px 48px 96px;
+}
+
+.page-header { margin-bottom: 32px; }
+.eyebrow {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+h2 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 36px;
+  margin-bottom: 16px;
+}
+h3 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 700px;
+}
+.section-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* ═══ PANELS ═══ */
+.panel {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 0;
+  padding: 28px;
+  margin-bottom: 16px;
+}
+
+/* ═══ STATS ROW ═══ */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+a.stat {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+a.stat:hover {
+  border-color: var(--brand-accent);
+  box-shadow: 0 2px 8px rgba(123,79,158,.08);
+}
+.stat {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 0;
+  padding: 28px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.stat-num {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.stat-num.lg {
+  font-size: 36px;
+  margin-bottom: 2px;
+}
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+  line-height: 1.35;
+}
+.stat-sub-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+.stat-sub-label:last-child { margin-bottom: 0; }
+.stat-chart {
+  margin: 10px 0;
+}
+.stat-chart svg {
+  width: 120px;
+  height: 120px;
+}
+
+/* ═══ OVERVIEW BOX ═══ */
+.overview-box {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  line-height: 1.8;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+.overview-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #c9a0dc, #f0b8b8, #a0c4dc);
+}
+.overview-box p { margin-bottom: 12px; }
+.overview-box p:last-child { margin-bottom: 0; }
+.overview-box p:first-child { color: var(--text); font-weight: 500; }
+.overview-rest { display: none; }
+.overview-rest.open { display: block; }
+.overview-toggle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+  cursor: pointer;
+  border: 2px dashed var(--border);
+  background: none;
+  padding: 6px 14px;
+  margin-top: 8px;
+}
+.overview-toggle:hover { background: var(--bg); }
+
+/* ═══ SECTION DIVIDER ═══ */
+.section-divider {
+  border: none;
+  border-top: 3px solid var(--border);
+  margin: 48px 0;
+}
+
+/* ═══ FAMILY DOTS ═══ */
+.family-dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.family-dot {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.family-dot.claude { background: var(--claude); }
+.family-dot.chatgpt { background: var(--chatgpt); }
+.family-dot.gemini { background: var(--gemini); }
+.family-dot.inactive { opacity: 0.2; }
+
+/* ═══ SENTIMENT BADGE ═══ */
+.sentiment-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+}
+.sentiment-badge.positive { color: var(--pos); background: var(--pos-soft); }
+.sentiment-badge.negative { color: var(--neg); background: var(--neg-soft); }
+.sentiment-badge.neutral { color: var(--muted); background: var(--bg); }
+
+/* ═══ NARRATIVE SUMMARY ═══ */
+.narrative-summary {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.narrative-summary p { margin-bottom: 12px; }
+.narrative-summary strong { color: var(--text); font-weight: 700; }
+
+/* ═══ NARRATIVE CONTROL BAR ═══ */
+.control-bar {
+  display: flex;
+  height: 40px;
+  border: 2px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.control-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+  padding: 0 12px;
+}
+.control-segment.own { background: #4a6fa5; }
+.control-segment.influence { background: #7b4f9e; }
+.control-segment.earn { background: #a899b5; }
+
+.control-legend {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.control-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.control-legend-swatch {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.control-detail-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 80px 80px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-inner);
+  font-size: 11px;
+  cursor: pointer;
+}
+.control-detail-row:last-child { border-bottom: none; }
+.control-detail-row:hover { background: var(--bg); }
+.control-detail-label { font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+.control-detail-bar {
+  height: 10px;
+  background: var(--bg);
+  position: relative;
+}
+.control-detail-fill {
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.control-detail-count { text-align: right; color: var(--muted); }
+.control-detail-domains { text-align: right; color: var(--dim); font-size: 10px; }
+.control-detail-expand {
+  display: none;
+  padding: 8px 0 12px 16px;
+  border-bottom: 1px solid var(--border-inner);
+}
+.control-detail-expand.open { display: block; }
+.control-detail-expand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 10px;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(201,184,212,.3);
+}
+.control-detail-expand-row:last-child { border-bottom: none; }
+.control-detail-expand-domain { font-weight: 500; }
+.control-detail-expand-count { font-weight: 600; }
+
+/* ═══ TOP CITED PAGES ═══ */
+.top-page-col-headers {
+  display: grid;
+  grid-template-columns: 50% 10% 15% 15% 10%;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 4px;
+}
+.top-page-col-headers span:nth-child(2) { text-align: center; }
+.top-page-col-headers span:nth-child(3) { text-align: center; }
+.top-page-col-headers span:nth-child(4) { text-align: center; }
+.top-page-col-headers span:nth-child(5) { text-align: center; }
+.top-page-bar {
+  display: grid;
+  grid-template-columns: 50% 10% 15% 15% 10%;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-inner);
+  font-size: 11px;
+}
+.page-sent-desc {
+  font-size: 10px;
+  color: var(--muted);
+  grid-column: 1 / -1;
+  padding: 4px 0 2px 12px;
+  border-left: 2px solid var(--border);
+  display: none;
+}
+.top-page-bar.expanded .page-sent-desc { display: block; }
+.top-page-bar { cursor: pointer; }
+.mentioned-yes { color: #a07ba3; font-weight: 700; font-size: 9px; border: 1.5px solid #a07ba3; padding: 2px 8px; border-radius: 3px; display: inline-block; }
+.mentioned-no { color: var(--dim); font-weight: 600; font-size: 9px; border: 1.5px solid var(--border-inner); padding: 2px 8px; border-radius: 3px; display: inline-block; }
+.sent-cat { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 3px; display: inline-block; border: none; }
+.sent-cat.positive { color: #fff; background: #2e7d32; }
+.sent-cat.slightly-positive { color: #fff; background: #8fb89a; }
+.sent-cat.neutral { color: #3d2e4a; background: #e8c547; }
+.sent-cat.slightly-negative { color: #fff; background: #d4977a; }
+.sent-cat.negative { color: #fff; background: #c2185b; }
+.sent-cat.none { color: var(--dim); background: var(--bg); }
+.sent-cat.no-scrape { color: var(--dim); background: var(--bg); font-style: italic; }
+.top-page-bar:last-child { border-bottom: none; }
+.top-page-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.top-page-url {
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.top-page-count {
+  text-align: right;
+  font-weight: 700;
+  font-size: 13px;
+}
+.top-page-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 11px;
+  transition: color .15s;
+  margin-left: 6px;
+  vertical-align: baseline;
+}
+.top-page-link:hover { color: var(--accent); }
+.top-page-count { text-align: center; }
+
+/* ═══ DOMAIN LIST (expandable) ═══ */
+.src-domain {
+  border: 2px solid var(--border);
+  background: var(--panel);
+  margin-bottom: 6px;
+  transition: box-shadow .15s;
+}
+.src-domain:hover { box-shadow: 3px 3px 0 var(--border); }
+.src-domain-header {
+  display: grid;
+  grid-template-columns: 200px 1fr 120px 70px 60px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.src-domain-col-headers {
+  display: grid;
+  grid-template-columns: 200px 1fr 120px 70px 60px;
+  gap: 12px;
+  padding: 6px 16px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 6px;
+}
+.src-domain-col-headers span:nth-child(3) { text-align: center; }
+.src-domain-col-headers span:nth-child(4) { text-align: center; }
+.src-domain-col-headers span:nth-child(5) { text-align: center; }
+.src-domain-name { font-weight: 700; letter-spacing: 0.5px; }
+.src-domain-header > div:nth-child(3) { text-align: center; }
+.src-domain-header > div:nth-child(4) { text-align: center; display: flex; justify-content: center; }
+.src-domain-header > div:nth-child(5) { text-align: center; }
+.src-domain-bar {
+  height: 14px;
+  background: var(--bg);
+  position: relative;
+}
+.src-domain-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.5;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.src-domain-count { font-weight: 600; text-align: center; }
+.src-domain-urls {
+  display: none;
+  padding: 0 16px 12px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.src-domain-urls.open { display: block; }
+.src-domain-url {
+  padding: 4px 0;
+  border-top: 1px solid var(--border-inner);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.src-domain-url-path {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═══ SOURCE AUDIT ═══ */
+.audit-group { margin-bottom: 24px; }
+.audit-group-header {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 12px 18px;
+  margin-bottom: 10px;
+}
+.audit-group.liability .audit-group-header {
+  color: var(--neg);
+  background: var(--neg-soft);
+  border-left: 4px solid var(--neg);
+}
+.audit-group.asset .audit-group-header {
+  color: var(--pos);
+  background: var(--pos-soft);
+  border-left: 4px solid var(--pos);
+}
+.audit-group.neutral .audit-group-header {
+  color: var(--muted);
+  background: var(--bg);
+  border-left: 4px solid var(--dim);
+}
+.audit-card {
+  border: 2px solid var(--border);
+  background: var(--panel);
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+.audit-card.liability { border-left: 4px solid var(--neg); }
+.audit-card.asset { border-left: 4px solid var(--pos); }
+.audit-card-domain {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.audit-card-reason {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.audit-card-action {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  display: inline-block;
+  margin-top: 6px;
+}
+.audit-card-action.act-monitor { color: var(--warn); background: var(--warn-soft); }
+.audit-card-action.act-amplify { color: var(--pos); background: var(--pos-soft); }
+.audit-card-action.act-respond { color: var(--neg); background: var(--neg-soft); }
+.audit-card-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.audit-summary {
+  font-size: 11px;
+  color: var(--dim);
+  padding: 8px 14px;
+  background: var(--bg);
+  border-left: 4px solid var(--dim);
+}
+
+/* ═══ CONTENT GAPS ═══ */
+.gap-row {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-inner);
+  margin-bottom: 0;
+  font-size: 13px;
+}
+.gap-row.zero { }
+.gap-row.partial { }
+.gap-question { line-height: 1.5; }
+.coverage-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 4px 10px;
+}
+.coverage-badge.zero { color: var(--neg); }
+.coverage-badge.partial { color: var(--warn); }
+
+/* ═══ FAMILY COLUMNS ═══ */
+.family-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.family-col {
+  border: 2px solid var(--border);
+  background: var(--panel);
+  padding: 20px;
+}
+.family-col-header {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.family-col-dot {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+}
+.family-domain-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border-inner);
+}
+.family-domain-row:last-child { border-bottom: none; }
+.family-domain-count { color: var(--muted); font-weight: 600; }
+.family-exclusive-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--warn);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: var(--warn-soft);
+  display: inline-block;
+}
+
+/* ═══ BRAND DOMAIN HIGHLIGHT ═══ */
+.family-domain-row.brand-highlight {
+  background: rgba(123,79,158,.06);
+  margin: 0 -8px;
+  padding: 5px 8px;
+}
+
+/* ═══ TOGGLE BAR ═══ */
+.toggle-bar {
+  display: inline-flex;
+  border: 2px solid var(--border);
+  margin-bottom: 20px;
+}
+.toggle-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border: none;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  border-right: 1px solid var(--border);
+}
+.toggle-btn:last-child { border-right: none; }
+.toggle-btn:hover { color: var(--text); background: var(--bg); }
+.toggle-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+.toggle-view { display: none; }
+.toggle-view.active { display: block; }
+
+/* ═══ CITATION HEATMAP ═══ */
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.heatmap-table th {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.heatmap-table th:first-child {
+  text-align: left;
+  max-width: none;
+}
+.heatmap-table th.family-group {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+.heatmap-table th.family-group.claude-bg { background: rgba(212,135,46,.08); color: var(--claude); }
+.heatmap-table th.family-group.chatgpt-bg { background: rgba(58,138,92,.08); color: var(--chatgpt); }
+.heatmap-table th.family-group.gemini-bg { background: rgba(123,79,158,.08); color: var(--gemini); }
+.heatmap-table th.model-header.claude-bg { background: rgba(212,135,46,.04); }
+.heatmap-table th.model-header.chatgpt-bg { background: rgba(58,138,92,.04); }
+.heatmap-table th.model-header.gemini-bg { background: rgba(123,79,158,.04); }
+.heatmap-table td:nth-child(4),
+.heatmap-table td:nth-child(6) {
+  border-left: 2px solid var(--bg);
+}
+.heatmap-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-inner);
+  font-weight: 600;
+  font-size: 11px;
+}
+.heatmap-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.heatmap-table tbody tr:hover {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+.heatmap-cell {
+  min-width: 48px;
+}
+
+/* ═══ INSIGHT CALLOUT ═══ */
+.insight-callout {
+  background: var(--brand-soft);
+  border-left: 4px solid var(--brand-accent);
+  padding: 16px 20px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+/* ═══ TWO-COLUMN FAMILY GRID ═══ */
+.family-cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* ═══ OVERLAP STAT ═══ */
+.overlap-stat {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-left: 4px solid var(--dim);
+}
+
+/* ═══ SENTIMENT BAR (diverging) ═══ */
+.sent-bar-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 50px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-inner);
+  font-size: 11px;
+}
+.sent-bar-row:last-child { border-bottom: none; }
+.sent-bar-domain { font-weight: 600; }
+.sent-bar-container {
+  position: relative;
+  height: 20px;
+  background: var(--bg);
+}
+.sent-bar-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--border);
+}
+.sent-bar-fill {
+  position: absolute;
+  top: 2px;
+  height: calc(100% - 4px);
+}
+.sent-bar-fill.positive { background: var(--pos); opacity: 0.5; }
+.sent-bar-fill.negative { background: var(--neg); opacity: 0.5; }
+.sent-bar-value { font-weight: 600; text-align: right; }
+
+/* ═══ BUTTONS ═══ */
+.btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all .15s;
+  background: var(--panel);
+  color: var(--text);
+}
+.btn:hover { box-shadow: 3px 3px 0 var(--border); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { box-shadow: 3px 3px 0 rgba(123,79,158,.4); }
+.btn-danger {
+  background: var(--panel);
+  border-color: var(--neg);
+  color: var(--neg);
+}
+.btn-danger:hover {
+  background: var(--neg-soft);
+  box-shadow: 3px 3px 0 rgba(194,24,91,.25);
+}
+.btn-small {
+  font-size: 10px;
+  padding: 6px 12px;
+  letter-spacing: 1.5px;
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover {
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .family-cols { grid-template-columns: 1fr; }
+  .family-cols-2 { grid-template-columns: 1fr; }
+  .container { padding: 24px; }
+}
+</style>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div class="topbar">
+  <div class="topbar-brand">Canela.TV</div>
+  <div class="topbar-tabs">
+    <button class="tab">Summary</button>
+    <button class="tab">Share of Model</button>
+    <button class="tab">Perception</button>
+    <button class="tab">Landscape</button>
+    <button class="tab">Platforms</button>
+    <button class="tab active">Sources</button>
+    <button class="tab">Conversations</button>
+    <button class="tab">Settings</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="container">
+
+  <!-- Page Header -->
+  <div class="page-header" data-region="Page Header">
+    <h1>Citation Intelligence</h1>
+    <div class="subtitle">Where AI models get their information about your brand — and how much of that narrative you control.</div>
+  </div>
+
+  <!-- ═══ STATS ROW ═══ -->
+  <div data-region="Stats Row" style="display:grid;grid-template-columns:0.7fr 1fr 1fr;gap:12px;margin-bottom:32px;">
+    <!-- Left column: two stacked half-height cards -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <a class="stat" href="#sec-summary" style="flex:1;justify-content:center">
+        <div class="stat-num lg" style="color:var(--brand-accent)">1,693</div>
+        <div class="stat-sub-label">Total Citations</div>
+        <div class="stat-num lg" style="color:var(--brand-accent)">411</div>
+        <div class="stat-sub-label" style="margin-bottom:0">Unique Domains</div>
+      </a>
+      <a class="stat" href="#sec-audit" style="flex:1;justify-content:center">
+        <div class="stat-num lg" style="color:var(--neg)">4</div>
+        <div class="stat-sub-label">Liabilities Flagged</div>
+        <div class="stat-num lg" style="color:var(--pos)">8</div>
+        <div class="stat-sub-label" style="margin-bottom:0">Assets Found</div>
+      </a>
+    </div>
+    <!-- Middle column: Pie card (75%) + small card (25%) -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <a class="stat" href="#sec-narrative" style="flex:3;flex-direction:row;align-items:center;padding:12px 18px;text-align:left;gap:8px;">
+        <div style="flex:0 0 30%;min-width:0;padding-left:8px;">
+          <div class="stat-num" style="color:#4a6fa5;margin-bottom:10px;">12%</div>
+          <div class="stat-label">Citations from Owned Sources</div>
+        </div>
+        <div class="stat-chart" style="margin:0;flex:1;display:flex;justify-content:center;">
+          <svg viewBox="0 0 120 120" style="width:100%;max-width:180px;height:auto;">
+            <circle cx="60" cy="60" r="54" fill="#d5cdd9"/>
+            <path d="M60,6 A54,54 0 0,1 97,20.7 L60,60 Z" fill="#4a6fa5"/>
+          </svg>
+        </div>
+      </a>
+      <a class="stat" href="#sec-aided" style="flex:1;padding:14px 16px;">
+        <div class="stat-num" style="font-size:28px;color:var(--brand-accent)">23</div>
+        <div class="stat-label" style="font-size:12px;">Aided Exclusives</div>
+      </a>
+    </div>
+    <!-- Right column: Pie card (75%) + small card (25%) -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <a class="stat" href="#sec-pages" style="flex:3;flex-direction:row;align-items:center;padding:12px 18px;text-align:left;gap:8px;">
+        <div style="flex:0 0 30%;min-width:0;padding-left:8px;">
+          <div class="stat-num" style="color:#4a6fa5;margin-bottom:10px;">44%</div>
+          <div class="stat-label" style="line-height:1.5">of top cited sources mention Canela.TV</div>
+        </div>
+        <div class="stat-chart" style="margin:0;flex:1;display:flex;justify-content:center;">
+          <svg viewBox="0 0 120 120" style="width:100%;max-width:180px;height:auto;">
+            <circle cx="60" cy="60" r="54" fill="#d5cdd9"/>
+            <path d="M60,6 A54,54 0 0,1 79.9,110.2 L60,60 Z" fill="#4a6fa5"/>
+          </svg>
+        </div>
+      </a>
+      <a class="stat" href="#sec-gaps" style="flex:1;padding:14px 16px;">
+        <div class="stat-num" style="font-size:28px;color:var(--neg)">16</div>
+        <div class="stat-label" style="font-size:12px;">Content Gaps</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══ SUMMARY ═══ -->
+  <h2 id="sec-summary">Summary</h2>
+  <div class="overview-box" data-region="Summary">
+    <p>Canela.TV has garnered a total of 1,693 citations from 411 unique domains, but faces significant challenges with 75.5% of its narrative being driven by external sources, indicating a lack of brand control. While positive press from domains like prnewswire.com (59 citations) highlights its growth, negative sentiments from justuseapp.com and scamadviser.com (23 combined citations) raise concerns about user satisfaction and legitimacy.</p>
+
+    <div class="overview-rest" id="sources-overview-rest">
+      <p>The strongest citation assets for Canela.TV include prnewswire.com, which has published 59 positive press releases about the brand's app launch and expansion, significantly enhancing its visibility. Conversely, the brand's biggest liabilities stem from justuseapp.com, where 14 citations reflect negative user reviews, and scamadviser.com, which has 9 citations expressing doubts about the app's legitimacy. These negative perceptions can undermine the brand's credibility in a competitive streaming market.</p>
+
+      <p>Aided brand recognition stands at 11.1%, while unaided recognition is alarmingly low at 0.0%, indicating that Canela.TV is not top-of-mind for consumers outside of branded queries. This disparity highlights the need for increased marketing efforts to enhance unaided recall and establish a stronger presence in the streaming category. The brand's visibility is further challenged by a significant number of shared domains (52), suggesting that many discussions are happening without direct brand association.</p>
+
+      <p>Sentiment analysis of 40 scraped pages reveals an average sentiment score of 0.5, with 20 pages mentioning the brand positively, primarily from prnewswire.com. However, there are 16 content gaps identified, including queries about free streaming services, which Canela.TV could address to capture a larger audience. By filling these gaps, the brand can enhance its narrative control and improve overall sentiment in the marketplace.</p>
+    </div>
+
+    <button class="overview-toggle" id="sources-overview-toggle" onclick="var r=document.getElementById('sources-overview-rest');var b=document.getElementById('sources-overview-toggle');if(r.classList.contains('open')){r.classList.remove('open');b.textContent='Read more'}else{r.classList.add('open');b.textContent='Show less'}">Read more</button>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 1: MOST-CITED DOMAINS (toggleable) ═══ -->
+  <h2 id="sec-domains">Most-Cited Domains</h2>
+
+  <div data-region="Most-Cited Domains">
+    <div class="toggle-bar">
+      <button class="toggle-btn active" onclick="toggleDomains(this, 'domains-all')">Total</button>
+      <button class="toggle-btn" onclick="toggleDomains(this, 'domains-aided')">Aided</button>
+      <button class="toggle-btn" onclick="toggleDomains(this, 'domains-unaided')">Unaided</button>
+    </div>
+
+    <!-- TOTAL VIEW -->
+    <div class="toggle-view active" id="domains-all">
+      <div class="src-domain-col-headers"><span>Domain</span><span>Volume</span><span>Avg Response<br>Sentiment</span><span>Families</span><span>Count</span></div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">en.wikipedia.org</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:100%"></div></div>
+          <div><span class="sentiment-badge positive">+0.18</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">83</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/wiki/Canela.TV</span><span>61</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">/wiki/Streaming_television</span><span>22</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">prnewswire.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:71%"></div></div>
+          <div><span class="sentiment-badge positive">+0.40</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">59</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/news-releases/canela-media-launches-free-streaming...</span><span>38</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">/news-releases/canela-tv-expands-content-library...</span><span>21</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">thestreamable.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:53%"></div></div>
+          <div><span class="sentiment-badge positive">+0.08</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">44</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/streaming/free/canela-tv</span><span>31</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">/streaming/free/best-free-streaming</span><span>13</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">apps.apple.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:41%"></div></div>
+          <div><span class="sentiment-badge positive">+0.25</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">34</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/us/app/canela-tv/id1497744370</span><span>34</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">play.google.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:40%"></div></div>
+          <div><span class="sentiment-badge positive">+0.20</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">33</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/store/apps/details?id=com.canelatv</span><span>33</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">canela.tv</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:36%"></div></div>
+          <div><span class="sentiment-badge positive">+0.31</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">30</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">canela.tv (homepage)</span><span>18</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">canela.tv/en/movies</span><span>7</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">canela.tv/en/series</span><span>5</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">prweb.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:33%"></div></div>
+          <div><span class="sentiment-badge positive">+0.35</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">27</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/releases/canela-media-launches...</span><span>27</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">streamtvinsider.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:30%"></div></div>
+          <div><span class="sentiment-badge positive">+0.12</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">25</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/canela-tv-partnerships-2024</span><span>25</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">advanced-television.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:27%"></div></div>
+          <div><span class="sentiment-badge neutral">+0.05</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">22</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/canela-tv-expands-originals</span><span>22</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">amazon.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:24%"></div></div>
+          <div><span class="sentiment-badge positive">+0.15</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">20</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/dp/B08XYZ-canela-tv-fire-stick</span><span>20</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AIDED VIEW -->
+    <div class="toggle-view" id="domains-aided">
+      <div class="src-domain-col-headers"><span>Domain</span><span>Volume</span><span>Avg Response<br>Sentiment</span><span>Families</span><span>Count</span></div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">canela.tv</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:100%"></div></div>
+          <div><span class="sentiment-badge positive">+0.31</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">30</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">canela.tv (homepage)</span><span>18</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">canela.tv/en/movies</span><span>7</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">canela.tv/en/series</span><span>5</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">prnewswire.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:93%"></div></div>
+          <div><span class="sentiment-badge positive">+0.40</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">28</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/news-releases/canela-media-launches...</span><span>22</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">/news-releases/canela-tv-expands...</span><span>6</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">thestreamable.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:83%"></div></div>
+          <div><span class="sentiment-badge positive">+0.10</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">25</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/streaming/free/canela-tv</span><span>25</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">apps.apple.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:73%"></div></div>
+          <div><span class="sentiment-badge positive">+0.25</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">22</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/us/app/canela-tv/id1497744370</span><span>22</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">play.google.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:67%"></div></div>
+          <div><span class="sentiment-badge positive">+0.20</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">20</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/store/apps/details?id=com.canelatv</span><span>20</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">prweb.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:60%"></div></div>
+          <div><span class="sentiment-badge positive">+0.35</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">18</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/releases/canela-media-launches...</span><span>18</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">canelatv-web-ui...</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:50%"></div></div>
+          <div><span class="sentiment-badge positive">+0.22</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt inactive"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">15</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">canelatv-web-ui.cms.api.canela.tv/...</span><span>15</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">advanced-television.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:47%"></div></div>
+          <div><span class="sentiment-badge neutral">+0.05</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">14</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/canela-tv-expands-originals</span><span>14</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">amazon.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:40%"></div></div>
+          <div><span class="sentiment-badge positive">+0.15</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">12</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/dp/B08XYZ-canela-tv-fire-stick</span><span>12</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">streamtvinsider.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:37%"></div></div>
+          <div><span class="sentiment-badge positive">+0.12</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">11</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/canela-tv-partnerships-2024</span><span>11</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNAIDED VIEW -->
+    <div class="toggle-view" id="domains-unaided">
+      <div class="src-domain-col-headers"><span>Domain</span><span>Volume</span><span>Avg Response<br>Sentiment</span><span>Families</span><span>Count</span></div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">streamtvinsider.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:100%"></div></div>
+          <div><span class="sentiment-badge positive">+0.12</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">22</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/best-free-streaming-services-2024</span><span>22</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">en.wikipedia.org</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:82%"></div></div>
+          <div><span class="sentiment-badge positive">+0.18</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">18</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/wiki/Streaming_television</span><span>12</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">/wiki/Over-the-top_media</span><span>6</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">reddit.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:68%"></div></div>
+          <div><span class="sentiment-badge negative">-0.10</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt inactive"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">15</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/r/cordcutters/comments/free_streaming_apps</span><span>9</span></div>
+          <div class="src-domain-url"><span class="src-domain-url-path">/r/Roku/comments/best_free_channels</span><span>6</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">cordcuttersnews.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:64%"></div></div>
+          <div><span class="sentiment-badge negative">-0.15</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">14</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/best-free-streaming-services</span><span>14</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">agoodmovietowatch.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:59%"></div></div>
+          <div><span class="sentiment-badge positive">+0.08</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">13</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/free-streaming-services</span><span>13</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">channelstore.roku.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:55%"></div></div>
+          <div><span class="sentiment-badge positive">+0.10</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">12</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/channels/free-movies-tv</span><span>12</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">consumerreports.org</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:45%"></div></div>
+          <div><span class="sentiment-badge positive">+0.15</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini inactive"></span></div>
+          <div class="src-domain-count">10</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/electronics/best-free-streaming-services</span><span>10</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">corporate.televisaunivision.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:41%"></div></div>
+          <div><span class="sentiment-badge neutral">+0.04</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt inactive"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">9</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/press-releases/streaming-strategy</span><span>9</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">mountain.com</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:36%"></div></div>
+          <div><span class="sentiment-badge neutral">+0.02</span></div>
+          <div class="family-dots"><span class="family-dot claude inactive"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">8</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/streaming-services-comparison</span><span>8</span></div>
+        </div>
+      </div>
+      <div class="src-domain">
+        <div class="src-domain-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <div class="src-domain-name">reviews.org</div>
+          <div class="src-domain-bar"><div class="src-domain-bar-fill" style="width:32%"></div></div>
+          <div><span class="sentiment-badge positive">+0.08</span></div>
+          <div class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></div>
+          <div class="src-domain-count">7</div>
+        </div>
+        <div class="src-domain-urls">
+          <div class="src-domain-url"><span class="src-domain-url-path">/internet/best-free-streaming-services</span><span>7</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 2: SENTIMENT BY SOURCE ═══ -->
+  <h2 id="sec-sentiment">Brand Sentiment by Source</h2>
+
+  <div data-region="Sentiment by Source">
+    <div class="insight-callout" style="margin-bottom:16px">When AI models cite your brand-owned and press sources, their responses correlate with strongly positive brand sentiment (+0.31 to +0.45). The two sources most correlated with negative AI sentiment — cordcuttersnews.com and reddit.com — are both community-driven and focus on ad load and app stability complaints.</div>
+    <div class="panel">
+    <div class="sent-bar-row" style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:4px;border:none;padding-bottom:0">
+      <div class="sent-bar-domain">Domain</div>
+      <div class="sent-bar-container" style="background:none"></div>
+      <div class="sent-bar-value" style="color:var(--dim)">Brand Sentiment</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">techcrunch.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:22.5%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.45</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">prnewswire.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:20%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.40</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">canela.tv</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:15.5%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.31</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">apps.apple.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:12.5%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.25</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">play.google.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:10%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.20</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">en.wikipedia.org</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:9%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.18</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">variety.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:6%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--pos)">+0.12</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">cnet.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill positive" style="left:50%;width:4%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--muted)">+0.08</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">reddit.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill negative" style="right:50%;width:5%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--neg)">-0.10</div>
+    </div>
+    <div class="sent-bar-row">
+      <div class="sent-bar-domain">cordcuttersnews.com</div>
+      <div class="sent-bar-container">
+        <div class="sent-bar-center"></div>
+        <div class="sent-bar-fill negative" style="right:50%;width:7.5%"></div>
+      </div>
+      <div class="sent-bar-value" style="color:var(--neg)">-0.15</div>
+    </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 3: NARRATIVE CONTROL ═══ -->
+  <!-- (renumbered: was section 2) -->
+  <h2 id="sec-narrative">Narrative Control</h2>
+  <div class="section-sub">How much of the information AI models cite about you comes from sources you own, can influence, or earn through reputation.</div>
+
+  <div data-region="Narrative Control" style="display:grid;grid-template-columns:2fr 3fr;gap:24px;align-items:stretch;">
+    <div class="narrative-summary" style="display:flex;flex-direction:column;padding:24px 28px;background:#f0eaf4;border:1.5px solid var(--border-inner);">
+      <div>
+        <p>Canela.TV controls just <strong>12%</strong> of the sources AI models cite when discussing the brand — nearly all from its own website (canela.tv, canelatv.com) and press releases on prnewswire.com and prweb.com.</p>
+        <p>The <strong>influence tier</strong> (34%) is driven by app store listings, press coverage from outlets like advanced-television.com and streamtvinsider.com, and retail presence on amazon.com. These are sources where the brand has partial control through partnerships and listings.</p>
+        <p>The largest share — <strong>46% earned</strong> — comes from sources the brand doesn't control at all: Wikipedia, Reddit, review blogs like agoodmovietowatch.com, and reference sites like similarweb.com and crunchbase.com. This heavy reliance on earned sources means the brand narrative is largely shaped by third parties.</p>
+      </div>
+      <p style="color:var(--dim);font-style:italic;margin-top:auto;font-size:11px;">Click a ring segment to drill into individual domains.</p>
+    </div>
+    <div style="display:flex;justify-content:center;align-items:center;">
+      <div id="sunburst-chart"></div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 4: TOP CITED PAGES ═══ -->
+  <h2 id="sec-pages">Top Cited Pages</h2>
+
+  <div data-region="Top Cited Pages">
+    <div class="toggle-bar">
+      <button class="toggle-btn active" onclick="togglePages(this, 'pages-all')">All</button>
+      <button class="toggle-btn" onclick="togglePages(this, 'pages-aided')">Aided</button>
+      <button class="toggle-btn" onclick="togglePages(this, 'pages-unaided')">Unaided</button>
+    </div>
+
+    <!-- ALL -->
+    <div class="toggle-view active panel" id="pages-all">
+      <div class="top-page-col-headers"><span>Page</span><span>Count</span><span>Canela.TV<br>Mentioned</span><span>Canela.TV<br>Sentiment</span><span>Families</span></div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV: Series and Movies</div><div class="top-page-url">amazon.com</div></div>
+        <div class="top-page-count">18</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat no-scrape">Not Scraped</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://www.amazon.com/Canela-TV/dp/B088JZK21D" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">The page does not provide any specific information or sentiment about Canela.TV, focusing instead on Amazon's review system and terms of use.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">7 Best Streaming Services en Espa&ntilde;ol in 2025</div><div class="top-page-url">agoodmovietowatch.com</div></div>
+        <div class="top-page-count">16</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://agoodmovietowatch.com/cord-cutting/best-streaming-services-en-espanol/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned on this page. AI models cite it for category context but the page itself discusses other streaming services.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Azteca Now &mdash; Wikipedia</div><div class="top-page-url">en.wikipedia.org</div></div>
+        <div class="top-page-count">15</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://en.wikipedia.org/wiki/Azteca_Now" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Wikipedia article about Azteca Now, a competitor streaming service.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV Review &mdash; Streaming Service</div><div class="top-page-url">thestreamable.com</div></div>
+        <div class="top-page-count">14</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://thestreamable.com/video-streaming/canela-tv" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Positive overview highlighting extensive content library, device compatibility, and diverse programming.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV &mdash; Series y Pel&iacute;culas App</div><div class="top-page-url">apps.apple.com</div></div>
+        <div class="top-page-count">12</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat slightly-positive">Slightly Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://apps.apple.com/us/app/canela-tv-series-and-movies/id1507429168" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Presents Canela.TV positively with free content and loyalty program, but user complaints about app performance and ads lead to mixed sentiment.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Best Streaming Services for Spanish Speakers</div><div class="top-page-url">reviews.org</div></div>
+        <div class="top-page-count">12</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.reviews.org/tv-service/best-streaming-services-for-spanish-speakers/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Page focuses on other streaming services for Spanish speakers.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">The Roku Channel &mdash; Wikipedia</div><div class="top-page-url">en.wikipedia.org</div></div>
+        <div class="top-page-count">11</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://en.wikipedia.org/wiki/The_Roku_Channel" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Wikipedia article about The Roku Channel.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Best Free Streaming Video Apps</div><div class="top-page-url">consumerreports.org</div></div>
+        <div class="top-page-count">11</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.consumerreports.org/electronics-computers/streaming-media/guide-to-free-streaming-video-services-a1149608760/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Consumer Reports guide to free streaming services does not include Canela.TV.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Free Ad-Supported TV: Best FAST Services</div><div class="top-page-url">mountain.com</div></div>
+        <div class="top-page-count">11</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://mountain.com/blog/free-ad-supported-streaming/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. General FAST streaming guide that does not reference Canela.TV.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Where to Watch Spanish TV Online</div><div class="top-page-url">fluentu.com</div></div>
+        <div class="top-page-count">9</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span></span></div>
+        <a class="top-page-link" href="https://www.fluentu.com/blog/spanish/spanish-tv-online/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Page focuses on other streaming services for Spanish TV.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela Media &mdash; Media GrowthFronts</div><div class="top-page-url">aimmgrowthfronts.com</div></div>
+        <div class="top-page-count">8</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://aimmgrowthfronts.com/dotm-submissions/canela-media/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Portrays Canela.TV positively, highlighting innovative approach and content offerings for Hispanic audiences.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV &mdash; Series y Pel&iacute;culas App</div><div class="top-page-url">apps.apple.com</div></div>
+        <div class="top-page-count">8</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat slightly-positive">Slightly Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://apps.apple.com/us/app/canela-tv-series-y-pel%C3%ADculas/id1507429168" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Positive with free content and loyalty program, but user complaints about app performance slightly detract.</div>
+      </div>
+    </div>
+
+    <!-- AIDED -->
+    <div class="toggle-view panel" id="pages-aided">
+      <div class="top-page-col-headers"><span>Page</span><span>Count</span><span>Canela.TV<br>Mentioned</span><span>Canela.TV<br>Sentiment</span><span>Families</span></div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV: Series and Movies</div><div class="top-page-url">amazon.com</div></div>
+        <div class="top-page-count">14</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat no-scrape">Not Scraped</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://www.amazon.com/Canela-TV/dp/B088JZK21D" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">No specific brand sentiment — Amazon product listing page.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV Review &mdash; Streaming Service</div><div class="top-page-url">thestreamable.com</div></div>
+        <div class="top-page-count">11</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://thestreamable.com/video-streaming/canela-tv" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Positive overview highlighting content library and device compatibility.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV &mdash; Series y Pel&iacute;culas App</div><div class="top-page-url">apps.apple.com</div></div>
+        <div class="top-page-count">10</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat slightly-positive">Slightly Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://apps.apple.com/us/app/canela-tv-series-and-movies/id1507429168" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Mixed — positive on content and loyalty program, negative user complaints about performance.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela Media &mdash; Media GrowthFronts</div><div class="top-page-url">aimmgrowthfronts.com</div></div>
+        <div class="top-page-count">7</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://aimmgrowthfronts.com/dotm-submissions/canela-media/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Innovative approach and content offerings for Hispanic audiences highlighted.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">AVOD streamer Canela eyes data-service growth</div><div class="top-page-url">streamtvinsider.com</div></div>
+        <div class="top-page-count">5</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://www.streamtvinsider.com/technology/avod-streamer-canela-eyes-data-service-growth" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Highlights significant growth, Club Canela innovation, and strong audience engagement.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela Media Accelerates Growth in 2025</div><div class="top-page-url">prnewswire.com</div></div>
+        <div class="top-page-count">5</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://www.prnewswire.com/news-releases/canela-media-accelerates-growth-in-2025-with-innovation-scale-and-hispanic-audience-leadership-302601991.html" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Very positive — growth, innovation, and Hispanic audience leadership emphasized.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV launches original shows (CNBC)</div><div class="top-page-url">cnbc.com</div></div>
+        <div class="top-page-count">5</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.cnbc.com/2022/09/16/spanish-language-streaming-service-canelatv-launches-original-shows.html" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Positive — unique market position, original content commitment, growth trajectory.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV &mdash; Free Movies &amp; Series</div><div class="top-page-url">play.google.com</div></div>
+        <div class="top-page-count">4</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat neutral">Neutral</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://play.google.com/store/apps/details?id=com.canelatv" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Mixed reviews — users appreciate free content but report frequent crashes and excessive ads.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Canela.TV App Review &mdash; Is It Legit?</div><div class="top-page-url">scamadviser.com</div></div>
+        <div class="top-page-count">4</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat slightly-negative">Slightly Negative</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.scamadviser.com/check-website/canela.tv" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Questions the app's legitimacy and raises trust concerns for users.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Hispanic Streaming: Canela.TV vs Competitors</div><div class="top-page-url">advanced-television.com</div></div>
+        <div class="top-page-count">3</div>
+        <div style="text-align:center"><span class="mentioned-yes">yes</span></div>
+        <div style="text-align:center"><span class="sent-cat positive">Positive</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://advanced-television.com/hispanic-streaming-canela-tv/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Favorable competitive positioning in the Hispanic AVOD market.</div>
+      </div>
+    </div>
+
+    <!-- UNAIDED -->
+    <div class="toggle-view panel" id="pages-unaided">
+      <div class="top-page-col-headers"><span>Page</span><span>Count</span><span>Canela.TV<br>Mentioned</span><span>Canela.TV<br>Sentiment</span><span>Families</span></div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">7 Best Streaming Services en Espa&ntilde;ol in 2025</div><div class="top-page-url">agoodmovietowatch.com</div></div>
+        <div class="top-page-count">14</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://agoodmovietowatch.com/cord-cutting/best-streaming-services-en-espanol/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Discusses other streaming services for Spanish-speaking viewers.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Azteca Now &mdash; Wikipedia</div><div class="top-page-url">en.wikipedia.org</div></div>
+        <div class="top-page-count">13</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://en.wikipedia.org/wiki/Azteca_Now" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Competitor Wikipedia article.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Best Streaming Services for Spanish Speakers</div><div class="top-page-url">reviews.org</div></div>
+        <div class="top-page-count">11</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.reviews.org/tv-service/best-streaming-services-for-spanish-speakers/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Focuses on other services for Spanish speakers.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">The Roku Channel &mdash; Wikipedia</div><div class="top-page-url">en.wikipedia.org</div></div>
+        <div class="top-page-count">10</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://en.wikipedia.org/wiki/The_Roku_Channel" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Wikipedia article about The Roku Channel.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Best Free Streaming Video Apps</div><div class="top-page-url">consumerreports.org</div></div>
+        <div class="top-page-count">10</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.consumerreports.org/electronics-computers/streaming-media/guide-to-free-streaming-video-services-a1149608760/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Consumer Reports guide doesn't include Canela.TV.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Free Ad-Supported TV: Best FAST Services</div><div class="top-page-url">mountain.com</div></div>
+        <div class="top-page-count">9</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://mountain.com/blog/free-ad-supported-streaming/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. General FAST streaming guide.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Where to Watch Spanish TV Online</div><div class="top-page-url">fluentu.com</div></div>
+        <div class="top-page-count">8</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">—</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span></span></div>
+        <a class="top-page-link" href="https://www.fluentu.com/blog/spanish/spanish-tv-online/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Focuses on other Spanish TV streaming options.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Best Free Streaming Services 2025</div><div class="top-page-url">tomsguide.com</div></div>
+        <div class="top-page-count">7</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">&mdash;</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot chatgpt"></span></span></div>
+        <a class="top-page-link" href="https://www.tomsguide.com/best-picks/best-free-streaming-services" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Major roundup of free streaming services omits Canela.TV.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Cord-Cutting Guide: Free TV Alternatives</div><div class="top-page-url">cordcuttersnews.com</div></div>
+        <div class="top-page-count">6</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">&mdash;</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot claude"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://www.cordcuttersnews.com/cord-cutting-guide/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Cord-cutting guide focuses on major FAST platforms.</div>
+      </div>
+      <div class="top-page-bar" onclick="this.classList.toggle('expanded')">
+        <div><div class="top-page-title">Streaming Services in Spanish &mdash; Reddit</div><div class="top-page-url">reddit.com</div></div>
+        <div class="top-page-count">5</div>
+        <div style="text-align:center"><span class="mentioned-no">no</span></div>
+        <div style="text-align:center"><span class="sent-cat none">&mdash;</span></div>
+        <div style="text-align:center"><span class="family-dots"><span class="family-dot chatgpt"></span><span class="family-dot gemini"></span></span></div>
+        <a class="top-page-link" href="https://www.reddit.com/r/cordcutters/comments/streaming_spanish/" target="_blank" title="Open in new tab">&#x2197;</a>
+        <div class="page-sent-desc">Brand not mentioned. Reddit discussion about Spanish streaming options doesn't reference Canela.TV.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 5: SOURCE AUDIT ═══ -->
+  <h2 id="sec-audit">Source Audit</h2>
+  <div class="insight-callout" style="font-size:14px;line-height:1.6">Four sources are actively working against your brand narrative — two review sites with negative sentiment and two outdated listings. Meanwhile, your eight asset sources are carrying the load, led by press release syndication and tech media coverage of your Series A.</div>
+
+  <div data-region="Source Audit">
+    <!-- LIABILITIES -->
+    <div class="audit-group liability">
+      <div class="audit-group-header">[!] Liability — 4 sources</div>
+      <div class="audit-summary" style="color:var(--muted);background:rgba(194,24,91,.03);border-left-color:rgba(194,24,91,.15);margin-bottom:12px">Cordcuttersnews and Trustpilot are actively shaping a negative narrative — focus on responding to the review and improving your Trustpilot rating to neutralize the two highest-impact liabilities.</div>
+
+      <div class="audit-card liability">
+        <div>
+          <div class="audit-card-domain">cordcuttersnews.com</div>
+          <div class="audit-card-reason">Review emphasizes excessive ad load and limited content library. Cited by 2 of 3 model families. Negative framing directly contradicts brand positioning as a premium free service.</div>
+        </div>
+        <div class="audit-card-count">11 citations<div class="audit-card-action act-respond">Respond</div></div>
+      </div>
+
+      <div class="audit-card liability">
+        <div>
+          <div class="audit-card-domain">reddit.com/r/cordcutters</div>
+          <div class="audit-card-reason">User-generated complaints about buffering, app crashes, and content that "feels like filler." Models surface these threads when asked about streaming quality.</div>
+        </div>
+        <div class="audit-card-count">8 citations<div class="audit-card-action act-monitor">Monitor</div></div>
+      </div>
+
+      <div class="audit-card liability">
+        <div>
+          <div class="audit-card-domain">trustpilot.com</div>
+          <div class="audit-card-reason">2.1/5 average rating with complaints about customer support response times. Low review volume (47 reviews) but high negative sentiment.</div>
+        </div>
+        <div class="audit-card-count">6 citations<div class="audit-card-action act-respond">Respond</div></div>
+      </div>
+
+      <div class="audit-card liability">
+        <div>
+          <div class="audit-card-domain">glassdoor.com</div>
+          <div class="audit-card-reason">Company reviews mentioning rapid growth challenges. While not directly about the product, models occasionally cite this when discussing company reliability.</div>
+        </div>
+        <div class="audit-card-count">3 citations<div class="audit-card-action act-monitor">Monitor</div></div>
+      </div>
+    </div>
+
+    <!-- ASSETS -->
+    <div class="audit-group asset">
+      <div class="audit-group-header">[+] Asset — 8 sources</div>
+      <div class="audit-summary" style="color:var(--muted);background:rgba(46,125,50,.03);border-left-color:rgba(46,125,50,.15);margin-bottom:12px">Your strongest assets are prnewswire.com (+0.40 sentiment, 28 citations) and techcrunch.com's Series A coverage (+0.45) — amplify these by pitching follow-up stories to the same outlets.</div>
+
+      <div class="audit-card asset">
+        <div>
+          <div class="audit-card-domain">techcrunch.com</div>
+          <div class="audit-card-reason">Series A coverage positions Canela.TV as a well-funded, growing platform. All 3 model families cite this with strongly positive sentiment.</div>
+        </div>
+        <div class="audit-card-count">14 citations<div class="audit-card-action act-amplify">Amplify</div></div>
+      </div>
+
+      <div class="audit-card asset">
+        <div>
+          <div class="audit-card-domain">prnewswire.com</div>
+          <div class="audit-card-reason">Press releases consistently convey brand-approved messaging. High citation count and sentiment (+0.40) across Claude and Gemini.</div>
+        </div>
+        <div class="audit-card-count">28 citations<div class="audit-card-action act-amplify">Amplify</div></div>
+      </div>
+
+      <div class="audit-card asset">
+        <div>
+          <div class="audit-card-domain">variety.com</div>
+          <div class="audit-card-reason">Industry publication lending credibility. Review is generally positive with some constructive criticism about content depth.</div>
+        </div>
+        <div class="audit-card-count">22 citations<div class="audit-card-action act-amplify">Amplify</div></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 6: CONTENT GAPS ═══ -->
+
+  <h2 id="sec-gaps">Content Gaps</h2>
+  <div class="section-sub">Questions where no model (or few models) cited a brand-owned source in their response.</div>
+
+  <div data-region="Content Gaps">
+    <div class="gap-row" style="border:none;background:none;margin-bottom:0;padding-bottom:0;border-bottom:2px solid var(--border) !important">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)">Question</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);text-align:center">Coverage</div>
+    </div>
+    <div class="gap-row zero">
+      <div class="gap-question">What are the best free streaming services for Spanish-language movies and TV shows?</div>
+      <div class="coverage-badge zero">0/7 models</div>
+    </div>
+    <div class="gap-row zero">
+      <div class="gap-question">How does Canela.TV compare to Pluto TV and Tubi for Latino audiences?</div>
+      <div class="coverage-badge zero">0/7 models</div>
+    </div>
+    <div class="gap-row zero">
+      <div class="gap-question">Is Canela.TV available on Roku, Fire TV, and Apple TV?</div>
+      <div class="coverage-badge zero">0/7 models</div>
+    </div>
+    <div class="gap-row partial">
+      <div class="gap-question">What original content does Canela.TV produce?</div>
+      <div class="coverage-badge partial">2/7 models</div>
+    </div>
+    <div class="gap-row partial">
+      <div class="gap-question">How does Canela.TV make money if it's free?</div>
+      <div class="coverage-badge partial">1/7 models</div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 7: SOURCES BY PLATFORM ═══ -->
+  <h2 id="sec-platform">Sources by Platform</h2>
+
+  <div data-region="Sources by Platform">
+    <div class="toggle-bar">
+      <button class="toggle-btn active" onclick="togglePlatform(this, 'platform-all')">All</button>
+      <button class="toggle-btn" onclick="togglePlatform(this, 'platform-aided')">Aided</button>
+      <button class="toggle-btn" onclick="togglePlatform(this, 'platform-unaided')">Unaided</button>
+    </div>
+
+    <!-- ALL -->
+    <div class="toggle-view active" id="platform-all">
+      <div class="family-cols">
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--claude)"></div>Claude</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">32</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">14</span></div>
+          <div class="family-domain-row"><span>prnewswire.com</span><span class="family-domain-count">12</span></div>
+          <div class="family-domain-row"><span>variety.com</span><span class="family-domain-count">11</span></div>
+          <div class="family-domain-row"><span>techcrunch.com</span><span class="family-domain-count">8</span></div>
+          <div class="family-domain-row"><span>cnet.com</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row"><span>reddit.com</span><span class="family-domain-count">6</span></div>
+          <div class="family-domain-row"><span>fiercevideo.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>bloomberg.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>crunchbase.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-exclusive-header">Exclusive</div>
+          <div class="family-domain-row"><span>fiercevideo.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>bloomberg.com</span><span class="family-domain-count">3</span></div>
+        </div>
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--chatgpt)"></div>ChatGPT</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">28</span></div>
+          <div class="family-domain-row"><span>apps.apple.com</span><span class="family-domain-count">12</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">10</span></div>
+          <div class="family-domain-row"><span>cordcuttersnews.com</span><span class="family-domain-count">8</span></div>
+          <div class="family-domain-row"><span>play.google.com</span><span class="family-domain-count">8</span></div>
+          <div class="family-domain-row"><span>variety.com</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row"><span>cnet.com</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>techcrunch.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>pcmag.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>tomsguide.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-exclusive-header">Exclusive</div>
+          <div class="family-domain-row"><span>pcmag.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>tomsguide.com</span><span class="family-domain-count">2</span></div>
+        </div>
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--gemini)"></div>Gemini</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">27</span></div>
+          <div class="family-domain-row"><span>prnewswire.com</span><span class="family-domain-count">14</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">10</span></div>
+          <div class="family-domain-row"><span>apps.apple.com</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row"><span>play.google.com</span><span class="family-domain-count">6</span></div>
+          <div class="family-domain-row"><span>cordcuttersnews.com</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>reddit.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>justwatch.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>techcrunch.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>reelgood.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-exclusive-header">Exclusive</div>
+          <div class="family-domain-row"><span>justwatch.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>reelgood.com</span><span class="family-domain-count">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AIDED -->
+    <div class="toggle-view" id="platform-aided">
+      <div class="family-cols">
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--claude)"></div>Claude</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">22</span></div>
+          <div class="family-domain-row"><span>prnewswire.com</span><span class="family-domain-count">10</span></div>
+          <div class="family-domain-row"><span>variety.com</span><span class="family-domain-count">8</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">6</span></div>
+          <div class="family-domain-row"><span>techcrunch.com</span><span class="family-domain-count">6</span></div>
+          <div class="family-domain-row"><span>prweb.com</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>cnet.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>fiercevideo.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>advanced-television.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>bloomberg.com</span><span class="family-domain-count">2</span></div>
+        </div>
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--chatgpt)"></div>ChatGPT</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">18</span></div>
+          <div class="family-domain-row"><span>apps.apple.com</span><span class="family-domain-count">10</span></div>
+          <div class="family-domain-row"><span>play.google.com</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row"><span>prnewswire.com</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>variety.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>techcrunch.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>amazon.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>cnet.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>prweb.com</span><span class="family-domain-count">2</span></div>
+        </div>
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--gemini)"></div>Gemini</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">20</span></div>
+          <div class="family-domain-row"><span>prnewswire.com</span><span class="family-domain-count">12</span></div>
+          <div class="family-domain-row"><span>apps.apple.com</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>play.google.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>prweb.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>advanced-television.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>amazon.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>techcrunch.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>streamtvinsider.com</span><span class="family-domain-count">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNAIDED -->
+    <div class="toggle-view" id="platform-unaided">
+      <div class="family-cols">
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--claude)"></div>Claude</div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">10</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">8</span></div>
+          <div class="family-domain-row"><span>reddit.com</span><span class="family-domain-count">6</span></div>
+          <div class="family-domain-row"><span>streamtvinsider.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>cnet.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>variety.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>consumerreports.org</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>agoodmovietowatch.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>prnewswire.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>corporate.televisaunivision.com</span><span class="family-domain-count">2</span></div>
+        </div>
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--chatgpt)"></div>ChatGPT</div>
+          <div class="family-domain-row"><span>streamtvinsider.com</span><span class="family-domain-count">8</span></div>
+          <div class="family-domain-row"><span>cordcuttersnews.com</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">6</span></div>
+          <div class="family-domain-row"><span>agoodmovietowatch.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>channelstore.roku.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>mountain.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>reviews.org</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>consumerreports.org</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>cnet.com</span><span class="family-domain-count">2</span></div>
+        </div>
+        <div class="family-col">
+          <div class="family-col-header"><div class="family-col-dot" style="background:var(--gemini)"></div>Gemini</div>
+          <div class="family-domain-row"><span>streamtvinsider.com</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row brand-highlight"><span>canela.tv</span><span class="family-domain-count">7</span></div>
+          <div class="family-domain-row"><span>en.wikipedia.org</span><span class="family-domain-count">5</span></div>
+          <div class="family-domain-row"><span>cordcuttersnews.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>reddit.com</span><span class="family-domain-count">4</span></div>
+          <div class="family-domain-row"><span>agoodmovietowatch.com</span><span class="family-domain-count">3</span></div>
+          <div class="family-domain-row"><span>channelstore.roku.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>justwatch.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>reelgood.com</span><span class="family-domain-count">2</span></div>
+          <div class="family-domain-row"><span>corporate.televisaunivision.com</span><span class="family-domain-count">2</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 8: AIDED vs UNAIDED — EXCLUSIVE SOURCES ═══ -->
+  <h2 id="sec-aided">Aided vs Unaided Exclusives</h2>
+
+  <div data-region="Aided vs Unaided Exclusives">
+    <div class="insight-callout">
+      When your brand is named, AI models lean heavily on your own press releases and app store listings — sources you control (11.1% brand-owned). In unaided category questions, the reading list shifts to third-party review sites and Wikipedia — sources you earn, not own (0% brand-owned). Only 1 of the top-10 domains (streamtvinsider.com) appears in both lists.
+    </div>
+
+    <div class="family-cols-2">
+      <!-- AIDED EXCLUSIVES -->
+      <div class="family-col">
+        <div class="family-col-header">
+          <div class="family-col-dot" style="background:var(--accent)"></div>
+          Only in Aided Top 10
+        </div>
+        <div style="font-size:10px;color:var(--dim);margin-bottom:12px">Sources that enter the top 10 when the brand is named</div>
+        <div class="family-domain-row"><span>canela.tv</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge positive" style="font-size:9px;padding:1px 6px">Brand-owned</span><span class="family-domain-count">30</span></span></div>
+        <div class="family-domain-row"><span>prnewswire.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge positive" style="font-size:9px;padding:1px 6px">Press release</span><span class="family-domain-count">28</span></span></div>
+        <div class="family-domain-row"><span>apps.apple.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">App store</span><span class="family-domain-count">22</span></span></div>
+        <div class="family-domain-row"><span>play.google.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">App store</span><span class="family-domain-count">20</span></span></div>
+        <div class="family-domain-row"><span>prweb.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge positive" style="font-size:9px;padding:1px 6px">Press release</span><span class="family-domain-count">18</span></span></div>
+        <div class="family-domain-row"><span>canelatv-web-ui...</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge positive" style="font-size:9px;padding:1px 6px">Brand-owned</span><span class="family-domain-count">15</span></span></div>
+        <div class="family-domain-row"><span>advanced-television.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Press</span><span class="family-domain-count">14</span></span></div>
+        <div class="family-domain-row"><span>amazon.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Retailer</span><span class="family-domain-count">12</span></span></div>
+      </div>
+
+      <!-- UNAIDED EXCLUSIVES -->
+      <div class="family-col">
+        <div class="family-col-header">
+          <div class="family-col-dot" style="background:var(--dim)"></div>
+          Only in Unaided Top 10
+        </div>
+        <div style="font-size:10px;color:var(--dim);margin-bottom:12px">Sources that enter the top 10 when only the category is mentioned</div>
+        <div class="family-domain-row"><span>en.wikipedia.org</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Wikipedia</span><span class="family-domain-count">18</span></span></div>
+        <div class="family-domain-row"><span>reddit.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge negative" style="font-size:9px;padding:1px 6px">Forum / UGC</span><span class="family-domain-count">15</span></span></div>
+        <div class="family-domain-row"><span>cordcuttersnews.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge negative" style="font-size:9px;padding:1px 6px">Blog</span><span class="family-domain-count">14</span></span></div>
+        <div class="family-domain-row"><span>agoodmovietowatch.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Blog</span><span class="family-domain-count">13</span></span></div>
+        <div class="family-domain-row"><span>channelstore.roku.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Platform</span><span class="family-domain-count">12</span></span></div>
+        <div class="family-domain-row"><span>consumerreports.org</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Reviews</span><span class="family-domain-count">10</span></span></div>
+        <div class="family-domain-row"><span>corporate.televisaunivision.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Competitor</span><span class="family-domain-count">9</span></span></div>
+        <div class="family-domain-row"><span>mountain.com</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Blog</span><span class="family-domain-count">8</span></span></div>
+        <div class="family-domain-row"><span>reviews.org</span><span style="display:flex;align-items:center;gap:8px"><span class="sentiment-badge neutral" style="font-size:9px;padding:1px 6px">Reviews</span><span class="family-domain-count">7</span></span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ═══ SECTION 9: CITATION HEATMAP ═══ -->
+  <h2 id="sec-heatmap">Citation Heatmap</h2>
+
+  <div data-region="Citation Heatmap">
+    <div class="toggle-bar">
+      <button class="toggle-btn active" onclick="toggleHeatmap(this, 'heatmap-all')">All</button>
+      <button class="toggle-btn" onclick="toggleHeatmap(this, 'heatmap-aided')">Aided</button>
+      <button class="toggle-btn" onclick="toggleHeatmap(this, 'heatmap-unaided')">Unaided</button>
+    </div>
+
+    <div class="panel" style="padding:20px;overflow-x:auto">
+
+      <!-- ALL -->
+      <div class="toggle-view active" id="heatmap-all">
+        <table class="heatmap-table">
+          <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom">Domain</th>
+            <th colspan="2" class="family-group claude-bg">Claude</th>
+            <th colspan="2" class="family-group chatgpt-bg">ChatGPT</th>
+            <th colspan="3" class="family-group gemini-bg">Gemini</th>
+          </tr>
+          <tr>
+            <th class="model-header claude-bg">3.5-sonnet</th>
+            <th class="model-header claude-bg" style="border-right:2px solid var(--bg)">3-haiku</th>
+            <th class="model-header chatgpt-bg">gpt-4o</th>
+            <th class="model-header chatgpt-bg" style="border-right:2px solid var(--bg)">gpt-4o-mini</th>
+            <th class="model-header gemini-bg">2.0-flash</th>
+            <th class="model-header gemini-bg">1.5-pro</th>
+            <th class="model-header gemini-bg">2.5-flash</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>en.wikipedia.org</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.30)">12</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.45)">18</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.55)">22</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.48)">19</td>
+            </tr>
+            <tr>
+              <td>prnewswire.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.35)">14</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.25)">10</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.30)">12</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.20)">8</td>
+            </tr>
+            <tr>
+              <td>thestreamable.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.30)">12</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.25)">10</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.20)">8</td>
+            </tr>
+            <tr>
+              <td>apps.apple.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.25)">10</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.15)">6</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+            </tr>
+            <tr>
+              <td>play.google.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+            </tr>
+            <tr>
+              <td>canela.tv</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.15)">6</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+            </tr>
+            <tr>
+              <td>prweb.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+            </tr>
+            <tr>
+              <td>streamtvinsider.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+            </tr>
+            <tr>
+              <td>advanced-television.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.06)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.12)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+            </tr>
+            <tr>
+              <td>amazon.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.15)">6</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.10)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.08)">3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- AIDED (max=12, opacity = val/12 * 0.55) -->
+      <div class="toggle-view" id="heatmap-aided">
+        <table class="heatmap-table">
+          <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom">Domain</th>
+            <th colspan="2" class="family-group claude-bg">Claude</th>
+            <th colspan="2" class="family-group chatgpt-bg">ChatGPT</th>
+            <th colspan="3" class="family-group gemini-bg">Gemini</th>
+          </tr>
+          <tr>
+            <th class="model-header claude-bg">3.5-sonnet</th>
+            <th class="model-header claude-bg" style="border-right:2px solid var(--bg)">3-haiku</th>
+            <th class="model-header chatgpt-bg">gpt-4o</th>
+            <th class="model-header chatgpt-bg" style="border-right:2px solid var(--bg)">gpt-4o-mini</th>
+            <th class="model-header gemini-bg">2.0-flash</th>
+            <th class="model-header gemini-bg">1.5-pro</th>
+            <th class="model-header gemini-bg">2.5-flash</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>canela.tv</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.41)">9</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.28)">6</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.18)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+            </tr>
+            <tr>
+              <td>prnewswire.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.55)">12</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.28)">6</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+            </tr>
+            <tr>
+              <td>thestreamable.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.28)">6</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.23)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.18)">4</td>
+            </tr>
+            <tr>
+              <td>apps.apple.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.37)">8</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.23)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.23)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+            </tr>
+            <tr>
+              <td>play.google.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.32)">7</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.18)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.23)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+            </tr>
+            <tr>
+              <td>prweb.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.18)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+            </tr>
+            <tr>
+              <td>canelatv-web-ui...</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.23)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+            </tr>
+            <tr>
+              <td>advanced-television.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+            </tr>
+            <tr>
+              <td>amazon.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.18)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.14)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+            </tr>
+            <tr>
+              <td>streamtvinsider.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.05)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.09)">2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- UNAIDED (max=5, opacity = val/5 * 0.55) -->
+      <div class="toggle-view" id="heatmap-unaided">
+        <table class="heatmap-table">
+          <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom">Domain</th>
+            <th colspan="2" class="family-group claude-bg">Claude</th>
+            <th colspan="2" class="family-group chatgpt-bg">ChatGPT</th>
+            <th colspan="3" class="family-group gemini-bg">Gemini</th>
+          </tr>
+          <tr>
+            <th class="model-header claude-bg">3.5-sonnet</th>
+            <th class="model-header claude-bg" style="border-right:2px solid var(--bg)">3-haiku</th>
+            <th class="model-header chatgpt-bg">gpt-4o</th>
+            <th class="model-header chatgpt-bg" style="border-right:2px solid var(--bg)">gpt-4o-mini</th>
+            <th class="model-header gemini-bg">2.0-flash</th>
+            <th class="model-header gemini-bg">1.5-pro</th>
+            <th class="model-header gemini-bg">2.5-flash</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>streamtvinsider.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.55)">5</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+            </tr>
+            <tr>
+              <td>en.wikipedia.org</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+            </tr>
+            <tr>
+              <td>reddit.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+            </tr>
+            <tr>
+              <td>cordcuttersnews.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+            </tr>
+            <tr>
+              <td>agoodmovietowatch.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+            </tr>
+            <tr>
+              <td>channelstore.roku.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.44)">4</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+            </tr>
+            <tr>
+              <td>consumerreports.org</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+            </tr>
+            <tr>
+              <td>corporate.televisaunivision.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+            </tr>
+            <tr>
+              <td>mountain.com</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.33)">3</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+            </tr>
+            <tr>
+              <td>reviews.org</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.22)">2</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.11)">1</td>
+              <td class="heatmap-cell" style="background:rgba(123,79,158,.00)">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+// ══════════════════════════════
+// TOGGLE VIEWS (Most-Cited Domains)
+// ══════════════════════════════
+function toggleDomains(btn, viewId) {
+  var bar = btn.closest('.toggle-bar');
+  bar.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var container = btn.closest('[data-region]');
+  container.querySelectorAll('.toggle-view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(viewId).classList.add('active');
+}
+
+// ══════════════════════════════
+// TOGGLE VIEWS (Sources by Platform)
+// ══════════════════════════════
+function togglePlatform(btn, viewId) {
+  var bar = btn.closest('.toggle-bar');
+  bar.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var container = btn.closest('[data-region]');
+  container.querySelectorAll('.toggle-view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(viewId).classList.add('active');
+}
+
+// ══════════════════════════════
+// TOGGLE VIEWS (Top Cited Pages)
+// ══════════════════════════════
+function togglePages(btn, viewId) {
+  var bar = btn.closest('.toggle-bar');
+  bar.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var container = btn.closest('[data-region]');
+  container.querySelectorAll('.toggle-view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(viewId).classList.add('active');
+}
+
+// ══════════════════════════════
+// TOGGLE VIEWS (Citation Heatmap)
+// ══════════════════════════════
+function toggleHeatmap(btn, viewId) {
+  var bar = btn.closest('.toggle-bar');
+  bar.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var container = btn.closest('[data-region]');
+  container.querySelectorAll('.toggle-view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(viewId).classList.add('active');
+}
+
+// ══════════════════════════════
+// FIX TOP CITED PAGE LINKS — move inline after title
+// ══════════════════════════════
+document.querySelectorAll('.top-page-bar').forEach(function(row) {
+  var link = row.querySelector('.top-page-link');
+  if (!link) return;
+  // Stop link clicks from toggling the expand
+  link.addEventListener('click', function(e) { e.stopPropagation(); });
+  var title = row.querySelector('.top-page-title');
+  if (title) {
+    title.appendChild(document.createTextNode(' '));
+    title.appendChild(link);
+  }
+});
+
+// ══════════════════════════════
+// SUNBURST CHART (Plotly)
+// ══════════════════════════════
+(function() {
+  var BG = '#f5eef6';
+
+  // Graduated color palettes
+  var OWN  = ['#4a6fa5','#6388b8','#7ca1cb','#95bade','#a8c7e5','#bbd4ec'];
+  var INF  = ['#9a85a6','#a997b4','#b8a9c2','#c7bbd0','#d1c7d9','#dbd3e2','#e2dbe8','#e9e3ee','#f0eaf4'];
+  var EARN = ['#d5cdd9','#ddd6e1','#e5dfe9','#ede8f0','#f0ecf3','#f4f1f6','#f7f4f9','#faf8fb'];
+
+  var ids = [
+    'root',
+    'earn', 'influence', 'own',
+    'wikipedia', 'blogs_forums', 'ref_other',
+    'app_stores', 'press_media', 'retailers', 'social_media',
+    'brand_website', 'press_releases',
+    'd_enwiki',
+    'd_reddit', 'd_agoodmovie', 'd_justwatch', 'd_reviews',
+    'd_similarweb', 'd_crunchbase', 'd_televisaunivision',
+    'd_apple', 'd_google_play',
+    'd_advtv', 'd_streamtv', 'd_cordcutters', 'd_tvtech',
+    'd_amazon', 'd_roku',
+    'd_twitter', 'd_facebook',
+    'd_canela', 'd_canelatv',
+    'd_prnewswire', 'd_prweb', 'd_businesswire'
+  ];
+
+  var labels = [
+    '',
+    'YOU<br>EARN', 'YOU<br>INFLUENCE', 'YOU<br>OWN',
+    'WIKIPEDIA', 'BLOGS<br>&<br>FORUMS', 'REFERENCE<br>&<br>OTHER',
+    'APP<br>STORES', 'PRESS<br>&<br>MEDIA', 'RETAILERS', 'SOCIAL<br>MEDIA',
+    'BRAND<br>WEBSITE', 'PRESS<br>RELEASES',
+    'en.<br>wikipedia<br>.org',
+    'reddit<br>.com', 'agoodmovie<br>towatch<br>.com', 'justwatch<br>.com', 'reviews<br>.org',
+    'similarweb<br>.com', 'crunchbase<br>.com', 'corporate.<br>televisaunivision<br>.com',
+    'apps.<br>apple<br>.com', 'play.<br>google<br>.com',
+    'advanced-<br>television<br>.com', 'streamtv<br>insider<br>.com', 'cordcutters<br>news<br>.com', 'tvtech<br>nology<br>.com',
+    'amazon<br>.com', 'roku<br>.com',
+    'twitter<br>.com', 'facebook<br>.com',
+    'canela<br>.tv', 'canelatv<br>.com',
+    'prnewswire<br>.com', 'prweb<br>.com', 'businesswire<br>.com'
+  ];
+
+  var parent_ids = [
+    '',
+    'root', 'root', 'root',
+    'earn', 'earn', 'earn',
+    'influence', 'influence', 'influence', 'influence',
+    'own', 'own',
+    'wikipedia',
+    'blogs_forums', 'blogs_forums', 'blogs_forums', 'blogs_forums',
+    'ref_other', 'ref_other', 'ref_other',
+    'app_stores', 'app_stores',
+    'press_media', 'press_media', 'press_media', 'press_media',
+    'retailers', 'retailers',
+    'social_media', 'social_media',
+    'brand_website', 'brand_website',
+    'press_releases', 'press_releases', 'press_releases'
+  ];
+
+  var values = [
+    713,
+    330, 240, 143,
+    34, 127, 169,
+    42, 108, 38, 52,
+    87, 56,
+    34,
+    48, 31, 28, 20,
+    72, 54, 43,
+    24, 18,
+    38, 32, 22, 16,
+    23, 15,
+    30, 22,
+    62, 25,
+    31, 18, 7
+  ];
+
+  var colors = [
+    'rgba(0,0,0,0)',
+    EARN[0], INF[0], OWN[0],
+    EARN[1], EARN[2], EARN[3],
+    INF[1], INF[2], INF[3], INF[4],
+    OWN[1], OWN[2],
+    EARN[4],
+    EARN[4], EARN[5], EARN[6], EARN[7],
+    EARN[4], EARN[5], EARN[6],
+    INF[5], INF[6],
+    INF[5], INF[6], INF[7], INF[8],
+    INF[5], INF[6],
+    INF[5], INF[6],
+    OWN[3], OWN[4],
+    OWN[3], OWN[4], OWN[5]
+  ];
+
+  // Font sizes: ring 1=15, ring 2=11, ring 3=8 (decreasing per ring)
+  var ring_levels = [
+    0,
+    1,1,1,
+    2,2,2,
+    2,2,2,2,
+    2,2,
+    3,3,3,3,3,3,3,3,
+    3,3,3,3,3,3,3,3,3,3,
+    3,3,3,3,3
+  ];
+  var font_sizes = ring_levels.map(function(r) {
+    return r === 0 ? 1 : r === 1 ? 15 : r === 2 ? 11 : 8;
+  });
+
+  // Rotation to position segments correctly
+  var earn_deg = 330 / 713 * 360;
+  var inf_deg = 240 / 713 * 360;
+  var rotation = 90 - (earn_deg + inf_deg);
+
+  Plotly.newPlot('sunburst-chart', [{
+    type: 'sunburst',
+    ids: ids,
+    labels: labels,
+    parents: parent_ids,
+    values: values,
+    branchvalues: 'total',
+    maxdepth: 3,
+    sort: false,
+    rotation: rotation,
+    insidetextorientation: 'horizontal',
+    textfont: {
+      family: 'JetBrains Mono, monospace',
+      size: font_sizes
+    },
+    textinfo: 'label',
+    marker: {
+      colors: colors,
+      line: { width: 2, color: BG }
+    },
+    hovertemplate: '<b>%{label}</b><br>%{value} citations<br>%{percentRoot:.1%} of total<extra></extra>',
+    hoverlabel: {
+      bgcolor: '#3d2e4a',
+      bordercolor: '#3d2e4a',
+      font: { family: 'JetBrains Mono, monospace', size: 12, color: '#fff' }
+    }
+  }], {
+    margin: { t: 10, b: 10, l: 10, r: 10 },
+    width: 550,
+    height: 550,
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { family: 'JetBrains Mono, monospace', color: '#3d2e4a' },
+  }, {
+    displayModeBar: false,
+    responsive: true
+  });
+})();
+</script>
+
+</body>
+</html>
